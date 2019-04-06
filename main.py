@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from itertools import chain
-from sklearn.manifold import Isomap, MDS
+from sklearn.manifold import Isomap, MDS, LocallyLinearEmbedding
 
 
 def spiral(radius, step, resolution=.1, angle=0.0, start=0.0, spread=0.1):
@@ -19,7 +19,9 @@ def spiral(radius, step, resolution=.1, angle=0.0, start=0.0, spread=0.1):
         angle += resolution
     plt.clf()
     plt.scatter(x, y)
-    plt.savefig("spiral={0:.2f}.png".format(resolution))
+    title = "spiral={0:.2f}.png".format(resolution)
+    plt.title(title)
+    plt.savefig(title)
     return [x, y]
 
 
@@ -60,21 +62,14 @@ def half_moon_spiral(resolution=0.1, radius=1, spiral_density=.1):
     return [x, y, z]
 
 
-# hm_spiral = half_moon_spiral(radius=40, resolution=.1)
-
-# # plt.show()
-
-# fig.add_subplot()
-
-# plt.show()
-
 def draw_mds(matrix, spiral_density, layer_distance):
-    embedding = MDS(n_components=2)
+    embedding = MDS(n_components=2, max_iter=100)
     mds = embedding.fit_transform(matrix)
     plt.clf()
     plt.scatter(mds[:, 0], mds[:, 1])
-    plt.savefig(
-        "mds_spiral_density={0:.2f}_layer_distance={1:.2f}.png".format(spiral_density, layer_distance))
+    title = "mds_spiral_density={0:.2f}_layer_distance={1:.2f}.png".format(spiral_density, layer_distance)
+    plt.title(title)
+    plt.savefig(title)
 
 
 def draw_iso_map(matrix, spiral_density, layer_distance, k):
@@ -82,14 +77,20 @@ def draw_iso_map(matrix, spiral_density, layer_distance, k):
     iso_map = embedding.fit_transform(matrix)
     plt.clf()
     plt.scatter(iso_map[:, 0], iso_map[:, 1])
-    plt.savefig(
-        "iso_map_spiral_density={0:.2f}_layer_distance={1:.2f}_k={2:.2f}.png".format(spiral_density, layer_distance, k))
+    title = "iso_map_spiral_density={0:.2f}_layer_distance={1:.2f}_k={2:.2f}.png".format(spiral_density, layer_distance,
+                                                                                         k)
+    plt.title = title
+    plt.savefig(title)
 
-    pass
 
-
-def draw_lle():
-    pass
+def draw_lle(matrix, spiral_density, layer_distance, k):
+    embedding = LocallyLinearEmbedding(n_components=2)
+    lle = embedding.fit_transform(matrix)
+    plt.clf()
+    plt.scatter(lle[:, 0], lle[:, 1])
+    title = "lle_spiral_density={0:.2f}_layer_distance={1:.2f}_k={2:.2f}.png".format(spiral_density, layer_distance, k)
+    plt.title(title)
+    plt.savefig(title)
 
 
 for density in [.05, .1, .12]:
@@ -99,9 +100,11 @@ for density in [.05, .1, .12]:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(hm_spiral[0], hm_spiral[1], hm_spiral[2])
-        plt.savefig("half_moon_spiral_density={0:.2f}_layer_distance={1:.2f}.png".format(density, layer_distance))
+        title = "half_moon_spiral_density={0:.2f}_layer_distance={1:.2f}.png".format(density, layer_distance)
+        plt.title(title)
+        plt.savefig(title)
         matrix = np.column_stack((hm_spiral[0], hm_spiral[1], hm_spiral[2]))
         draw_mds(matrix, density, layer_distance)
         for k in [3, 5, 7]:
-            # draw_iso_map(matrix, density, layer_distance, k)
-            draw_lle()
+            draw_iso_map(matrix, density, layer_distance, k)
+            draw_lle(matrix, density, layer_distance, k)
